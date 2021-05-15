@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MagazynexAPI.Models;
+using System.Text.Json;
+using AutoMapper;
 
 namespace MagazynexAPI.Controllers
 {
@@ -12,6 +14,8 @@ namespace MagazynexAPI.Controllers
     [Route("[controller]")]
     public class UserController : ControllerBase
     {
+        private readonly IMapper _mapper;
+
         private static readonly User[] Users = new[]
         {
             new User("admin", "admin123!", "Pan", "Admin"),
@@ -22,51 +26,42 @@ namespace MagazynexAPI.Controllers
 
         private readonly ILogger<UserController> _logger;
 
-        public UserController(ILogger<UserController> logger)
+        public UserController(ILogger<UserController> logger, IMapper mapper)
         {
             _logger = logger;
+            _mapper = mapper;
         }
 
         [HttpGet]
         [Route("/getUserInfo/{id}")]
-        public User GetUserInfo([FromRoute]Guid id)
+        public IActionResult GetUserInfo([FromRoute]Guid id)
         {
-            User user = null;
-            foreach(var u in Users)
+            foreach(var user in Users)
             {
-                if(u.Id == id)
+                if(user.Id == id)
                 {
-                    user = u;
+                    var userDto = _mapper.Map<UserGetInfoDto>(user);
+                    return Ok(JsonSerializer.Serialize(userDto));
                 }
             }
-            user.Password = "";
-            return user;
+
+            return NotFound("User not found");
         }
 
         [HttpGet]
-        [Route("/login/{login}")]
-        public IActionResult Login([FromRoute]string login, [FromBody]string password)
+        [Route("/login/{password}")]
+        public IActionResult Login([FromRoute] string password)
         {
-            bool loggedIn = false;
-            string id = "";
             foreach (var user in Users)
             {
-                if (user.Login == login && user.Password == password)
+                if (user.Password == password)
                 {
-                    loggedIn = true;
-                    id = user.Id.ToString();
-                    break;
+                    var userDto = _mapper.Map<UserLogInDto>(user);
+                    return Ok(JsonSerializer.Serialize(userDto));
                 }
             }
-
-            if (loggedIn)
-            {
-                return Ok(id);
-            }
-            else
-            {
-                return NotFound("Wrong login or password");
-            }
+            
+            return NotFound("Wrong login or password");
         }
     }
 }

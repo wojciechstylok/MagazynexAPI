@@ -1,9 +1,11 @@
-﻿using MagazynexAPI.Models;
+﻿using AutoMapper;
+using MagazynexAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace MagazynexAPI.Controllers
@@ -22,25 +24,27 @@ namespace MagazynexAPI.Controllers
         };
 
         private readonly ILogger<BarcodeController> _logger;
+        private readonly IMapper _mapper;
 
-        public BarcodeController(ILogger<BarcodeController> logger)
+        public BarcodeController(ILogger<BarcodeController> logger, IMapper mapper)
         {
             _logger = logger;
+            _mapper = mapper;
         }
 
         [HttpGet]
         [Route("getInfo/{code}")]
-        public Barcode GetProductInfo([FromRoute]string code)
+        public IActionResult GetProductInfo([FromRoute]string code)
         {
-            Barcode barcode = null;
-            foreach (var bc in Barcodes)
+            foreach (var barcode in Barcodes)
             {
-                if (bc.Code == code)
+                if (barcode.Code == code)
                 {
-                    barcode = bc;
+                    return Ok(JsonSerializer.Serialize(barcode));
                 }
             }
-            return barcode;
+
+            return NotFound("Barcode not found");
         }
     }
 }
