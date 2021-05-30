@@ -14,7 +14,7 @@ namespace MagazynexAPI.Controllers
     [Route("[controller]")]
     public class BarcodeController : ControllerBase
     {
-        private static readonly Barcode[] Barcodes = new[]
+        public static readonly Barcode[] Barcodes = new[]
         {
             new Barcode("007001", "Woda mineralna gazowana", 6, "szt", "2021/05/10"),
             new Barcode("007002", "Woda mineralna niegazowana", 6, "szt", "2021/05/09"),
